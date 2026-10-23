@@ -20,4 +20,36 @@ npm start
 
 架构方案、实现过程与验收依据见 [doc/README.md](doc/README.md)。
 
-当前开发阶段：建立架构与工程骨架。
+## 示例
+
+```text
+svg> init 800 600
+svg> create g node1
+svg> create rect r1 100 100 160 60 blue in node1
+svg> create text t1 120 135 "开始" in node1
+svg> move node1 0 100
+svg> undo
+svg> save demo.svg
+```
+
+在浏览器里打开生成的 SVG 即可预览。输入 `help` 查看全部语法，按 Ctrl-D 退出。
+
+回放题面的两个例子：
+
+```sh
+npm run cli < examples/basic.txt
+npm run cli < examples/flowchart.txt
+```
+
+`basic.txt` 有两条故意演示错误的命令。流程图输出为 `examples/flowchart.svg`。
+交互终端显示 `svg>`；管道输入省略提示符，逐行按顺序执行。
+
+## 验证
+
+```sh
+npm ci
+npm run check
+```
+
+六种内置图形、编辑、容器操作、撤销重做、SVG 读写均已实现。
+`box` 属后续插件化阶段，本版按作业要求报未知图形类型。
