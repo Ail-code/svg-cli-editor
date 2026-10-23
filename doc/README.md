@@ -14,6 +14,10 @@
 | `test/` | 领域、命令会话、SVG 往返与依赖规则验收 |
 | `examples/` | 可回放的命令脚本与输入 SVG |
 
+![架构组件示意图](architecture.svg)
+
+对应 PlantUML 组件图源文件：[architecture.puml](architecture.puml)。箭头表示允许的依赖。
+
 ```plantuml
 @startuml
 component "CLI" as CLI
@@ -95,12 +99,74 @@ Main --> Infra
 - 将题面主会话与两节点流程图保存为可回放脚本，分别验证预期的两条错误与无错误的流程图。
 - 增加跨层导入与一类一文件检查，最终结果在质量保证节记录。
 
+### 迭代 5：交付与复核
+
+- 用户确定 GitHub 仓库名为 `svg-cli-editor`，可见性为公开；本地提交保留各阶段真实进展。
+- 复核 `[w] [h]` 的独立可选语法：补充单宽度参数，`init w` 使用默认高度 600，`canvas w` 保留现有高度，并增加回归案例。
+- 提供 macOS `run.command`，支持本机未配置系统 Node.js 时使用已有 Codex 运行时。
+- 新增 GitHub Actions 工作流，每次 push 或 PR 安装锁定依赖并运行构建及测试。远程工作流是否通过需以 GitHub 实际执行结果为准。
+- GitHub 插件已连接；网页自动化读取多次超时，插件没有创建仓库入口，仓库创建与远程推送暂待用户提供空仓库链接。不把本地提交记录等同于已推送。
+
 ## 一致性自查
 
-开发中。最终验收时填写实际目录、依赖检查结果及修订记录。
+### 模块划分
+
+实际目录与方案一致。新增的 Visitor 接口、只读定位值对象放在 Domain；SVG 解析仍只在 Infrastructure；分词、显示和 REPL 在 CLI。示例 SVG 和启动脚本是交付辅助文件，不改变分层。
+
+修订记录：最初对宽高参数按成对输入处理，复核题面后支持分别省略；初始 tsx CLI 入口改为 Node import 入口。两项都已同步到使用说明和测试。
+
+### 依赖方向
+
+`test/architecture.test.ts` 遍历全部源文件，检查静态 import 是否符合允许矩阵，并检查导出类的文件命名。当前检查通过。
+
+人工抽样核对：
+
+| 文件 | 实际依赖 | 结论 |
+| --- | --- | --- |
+| `domain/SvgDocument.ts` | Domain 的 Shape、Group、Numbers 等 | 符合 |
+| `application/commands/MoveCommand.ts` | Application 的 EditCommand、Domain 的 SvgDocument | 符合 |
+| `application/EditorApplication.ts` | Domain、Application 的 FileStore / SvgCodec 接口 | 符合，无文件系统实现依赖 |
+| `infrastructure/SvgXmlCodec.ts` | XML 库、Domain、Application 工厂及接口 | 符合 |
+| `cli/CommandDispatcher.ts` | Application 命令、Domain 数值校验、CLI 的解析与显示 | 符合 |
+
+静态扫描针对现有静态 import，不宣称能识别未来引入的动态加载或运行时隐式依赖。
 
 ## 质量保证手段
 
-计划验证：几何与容器规则；命令失败原子性；撤销重做与 IO 屏障；SVG 读写、自动补 ID、XML 转义；作业典型会话和流程图脚本；静态依赖规则。
+### 已执行检查
 
-最终测试数量、命令输出与已知边界随实现更新；不将尚未运行的检查记为通过。
+开发环境为 Node.js 24.19.0、TypeScript 7.0.2。执行 `npm run check`：严格 TypeScript 构建通过，28 个自动化测试全部通过。
+
+| 测试文件 | 数量 | 验证目标 |
+| --- | ---: | --- |
+| `test/domain.test.ts` | 3 | 嵌套 Composite 几何、唯一 ID、工厂边界、分组顺序 |
+| `test/history.test.ts` | 4 | 浮点准确恢复、部分执行溢出回滚、子树删除恢复、IO 屏障 |
+| `test/svg.test.ts` | 5 | 六种元素往返、XML 转义、补 ID 冲突、非法 SVG、真实文件读写 |
+| `test/cli.test.ts` | 12 | 命令解析、所有命令类别、指定错误、状态原子性、历史与管道输入 |
+| `test/acceptance.test.ts` | 2 | 作业主会话与两节点流程图回放 |
+| `test/architecture.test.ts` | 2 | 依赖方向、一类一文件 |
+
+另外使用构建后的 `node dist/Main.js` 实际回放两份脚本，生成 `examples/demo.svg`（5 个元素）与 `examples/flowchart.svg`（8 个元素）；实际运行 `run.command` 也完成流程图脚本。
+
+### 需求与证据
+
+| 作业要求 | 实现位置 / 验收 |
+| --- | --- |
+| 文档命令与历史限制 | EditorApplication、CommandHistory；CLI/历史测试 |
+| 十种编辑命令与 Command | application/commands 的十个类；混合序列逐次 undo/redo |
+| 六种图形与 Composite | domain/shapes；嵌套移动缩放测试 |
+| in / group / addto 与层级顺序 | CreateCommand、SvgDocument；CLI/领域测试 |
+| tree / show / help | CLI 的 Presenter 和 CommandDispatcher |
+| 唯一 ID、缺 ID 警告、错误不改状态 | SvgDocument、SvgXmlCodec、EditCommand；对应错误及回滚测试 |
+| SVG 浏览器格式、文字子节点 | SvgXmlCodec；转义与往返测试、示例输出 |
+| 分步 Git 与 final | 通过 `git log --reverse --oneline` 查看阶段记录；远程推送与 final 发布状态需实际核验 |
+
+### 已知边界与取舍
+
+- 当前覆盖题面内置的六种元素及规定属性。`path`、`tspan`、CSS `style`、`transform`、非匹配坐标系的 viewBox 等不在当前导入范围，显式报错；不会悄悄丢弃后继续读取。背景知识中的变换示例需先转为本阶段支持的几何坐标。
+- `set` 严格使用题面白名单；不允许修改 id。颜色字符串交由 SVG 渲染器解释，未实现完整 CSS 颜色校验器。
+- `box` 不实现；带 `data-kind` 的普通 g 导入后降级为 Group。
+- `group` 的跨父级新组位置、单参数宽高、IO 屏障清除旧历史的具体选择已在过程记录中写明。
+- Group 设置公共样式遵循 SVG 的继承；解组时将该组的显式样式补给尚未显式设置该属性的直接子节点，保留组样式带来的显示效果。
+- 快照历史未限制长度，成本随图形数和编辑次数增加。本阶段优先保证准确还原，再按实际性能需求优化。
+- 当前本地检查已执行；配置了 Node.js 22 的远程 CI，尚未把配置存在等同于远程运行通过。

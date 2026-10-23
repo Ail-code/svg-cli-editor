@@ -21,7 +21,7 @@ export class CommandDispatcher {
   readonly #presenter = new DocumentPresenter();
   readonly #handlers: ReadonlyMap<string, (args: readonly Token[]) => string[] | Promise<string[]>>;
   static readonly #help = [
-    "init [w h]", "read <file.svg>", "save [file.svg]", "canvas [w h]",
+    "init [w] [h]", "read <file.svg>", "save [file.svg]", "canvas [w] [h]",
     "create rect <id> <x> <y> <w> <h> [fill] [in <containerId>]",
     "create circle <id> <cx> <cy> <r> [fill] [in <containerId>]",
     "create ellipse <id> <cx> <cy> <rx> <ry> [fill] [in <containerId>]",
@@ -83,10 +83,12 @@ export class CommandDispatcher {
     if (args.length < minimum || args.length > maximum) throw new SvgError(`usage: ${syntax}`);
   }
   private dimensionArgs(args: readonly Token[], command: string): void {
-    if (args.length !== 0 && args.length !== 2) throw new SvgError(`usage: ${command} [w h]`);
+    if (args.length > 2) throw new SvgError(`usage: ${command} [w] [h]`);
   }
-  private dimensions(args: readonly Token[]): [] | [number, number] {
-    return args.length ? [this.numeric(args, 0, "width"), this.numeric(args, 1, "height")] : [];
+  private dimensions(args: readonly Token[]): [] | [number] | [number, number] {
+    if (!args.length) return [];
+    const width = this.numeric(args, 0, "width");
+    return args.length === 1 ? [width] : [width, this.numeric(args, 1, "height")];
   }
   private numeric(args: readonly Token[], index: number, name: string): number { return Numbers.parse(args[index]!.value, name); }
 }

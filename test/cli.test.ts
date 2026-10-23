@@ -10,7 +10,7 @@ test("lexer preserves hex colors, quoted empty strings, quotes, and literal in",
   assert.deepEqual(lexer.tokenize("  # comment"), []);
   assert.deepEqual(lexer.tokenize('set t text ""').map(token => token.value), ["set", "t", "text", ""]);
   await h.run("init"); await h.run("create rect r 0 0 10 20 #ffffff");
-  await h.run('create text t 1 2 "hello \\"world\\" in group"'.replaceAll('\\\\"', '\\"'));
+  await h.run(String.raw`create text t 1 2 "hello \"world\" in group"`);
   assert.equal(h.editor.document.require("r").attributes.get("fill"), "#ffffff");
   assert.equal(h.editor.document.require("t").textContent, 'hello "world" in group');
   await h.run('set t text ""'); assert.equal(h.editor.document.require("t").textContent, "");
@@ -22,6 +22,13 @@ test("help is available before a document; valid document-dependent commands are
   for (const line of ["tree", "show r", "create g g", "delete r", "move r 0 1", "scale r 2", "set r fill red", "group g r", "ungroup g", "addto g r", "front r", "back r", "save a.svg", "canvas", "undo", "redo"]) {
     assert.deepEqual(await h.commands.execute(line), ["error: no document. use 'init' or 'read' first"], line);
   }
+});
+
+test("individually optional dimensions use default or existing height", async () => {
+  const h = new TestHarness(); await h.run("init 320");
+  assert.equal(h.editor.document.width, 320); assert.equal(h.editor.document.height, 600);
+  await h.run("canvas 640 480"); await h.run("canvas 1280");
+  assert.equal(h.editor.document.width, 1280); assert.equal(h.editor.document.height, 480);
 });
 
 test("create supports all types and in; omitted paint remains omitted", async () => {

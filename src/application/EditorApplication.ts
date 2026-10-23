@@ -33,9 +33,10 @@ export class EditorApplication {
   public canvas(width?: number, height?: number): string[] {
     const document = this.document;
     if (width === undefined && height === undefined) return [`canvas ${document.width}x${document.height}`];
-    if (width === undefined || height === undefined) throw new SvgError("usage: canvas [w h]");
-    document.resize(width, height); this.#history.barrier();
-    return [`canvas resized to ${width}x${height}`];
+    if (width === undefined) throw new SvgError("usage: canvas [w] [h]");
+    const newHeight = height ?? document.height;
+    document.resize(width, newHeight); this.#history.barrier();
+    return [`canvas resized to ${width}x${newHeight}`];
   }
   public execute(command: EditCommand): string[] { return [this.#history.execute(command, this.#state)]; }
   public undo(): string[] { this.document; return [this.#history.undo(this.#state)]; }

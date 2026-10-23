@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="600" viewBox="0 0 1000 600" role="img" aria-labelledby="title desc">
+  <title id="title">SVG editor component dependencies</title>
+  <desc id="desc">Main composes CLI, Application and Infrastructure. CLI uses Application and Domain. Infrastructure implements Application ports and uses Domain. Application uses Domain.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0 0 L9 4 L0 8" fill="none" stroke="#53657e" stroke-width="1.5"/></marker>
+  </defs>
+  <rect width="1000" height="600" fill="#f8fafc"/>
+  <g font-family="Arial, sans-serif" fill="#18293f">
+    <text x="45" y="43" font-size="24" font-weight="bold">SVG CLI editor — component dependencies</text>
+    <g fill="none" stroke="#53657e" stroke-width="2" marker-end="url(#arrow)">
+      <path d="M500 136 V158 H180 V192"/>
+      <path d="M500 136 V192"/>
+      <path d="M500 136 V158 H820 V192"/>
+      <path d="M302 245 H372"/>
+      <path d="M692 245 H624" stroke-dasharray="6 4"/>
+      <path d="M500 296 V452"/>
+      <path d="M180 296 V503 H372"/>
+      <path d="M820 296 V503 H624"/>
+    </g>
+    <g stroke="#53657e" stroke-width="1.5">
+      <rect x="375" y="66" width="250" height="70" rx="6" fill="#e8edf5"/>
+      <rect x="55" y="192" width="250" height="104" rx="6" fill="#e6f1ff"/>
+      <rect x="375" y="192" width="250" height="104" rx="6" fill="#e8f5ef"/>
+      <rect x="695" y="192" width="250" height="104" rx="6" fill="#fff1df"/>
+      <rect x="375" y="452" width="250" height="104" rx="6" fill="#e8f5ef"/>
+    </g>
+    <g text-anchor="middle" font-size="20" font-weight="bold">
+      <text x="500" y="94">Main</text><text x="180" y="227">CLI</text>
+      <text x="500" y="227">Application</text><text x="820" y="227">Infrastructure</text>
+      <text x="500" y="487">Domain</text>
+    </g>
+    <g text-anchor="middle" font-size="15">
+      <text x="500" y="118">composition root</text>
+      <text x="180" y="253">lexer / dispatcher / REPL</text><text x="180" y="275">tree and property views</text>
+      <text x="500" y="253">commands / undo / redo</text><text x="500" y="275">FileStore / SvgCodec ports</text>
+      <text x="820" y="253">local file adapter</text><text x="820" y="275">SVG XML codec</text>
+      <text x="500" y="513">Shape / Group / SvgDocument</text><text x="500" y="535">geometry and tree invariants</text>
+      <text x="660" y="332" fill="#53657e">implements ports</text>
+      <text x="290" y="424" fill="#53657e">read-only views</text>
+    </g>
+  </g>
+</svg>

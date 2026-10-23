@@ -1,0 +1,15 @@
+@startuml
+component "CLI" as CLI
+component "Application\ncommands / history / ports" as App
+component "Domain\nshapes / document" as Domain
+component "Infrastructure\nfiles / SVG codec" as Infra
+component "Main\ncomposition root" as Main
+CLI --> App
+CLI --> Domain : format read-only views
+App --> Domain
+Infra --> App : implements ports
+Infra --> Domain
+Main --> CLI
+Main --> App
+Main --> Infra
+@enduml

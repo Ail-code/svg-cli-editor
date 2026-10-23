@@ -11,6 +11,9 @@ npm install
 npm run cli
 ```
 
+在本机已安装依赖的目录，也可双击 `run.command` 启动终端。它优先使用系统 Node.js，
+未配置时尝试当前用户目录下 Codex 的附带运行时。
+
 也可以构建后执行：
 
 ```sh
@@ -50,6 +53,8 @@ npm run cli < examples/flowchart.txt
 npm ci
 npm run check
 ```
+
+GitHub Actions 的 CI 在每次 push / pull request 时执行相同检查。
 
 六种内置图形、编辑、容器操作、撤销重做、SVG 读写均已实现。
 `box` 属后续插件化阶段，本版按作业要求报未知图形类型。
