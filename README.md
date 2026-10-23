@@ -2,6 +2,8 @@
 
 Lab1 Phase 1：使用 TypeScript、Command 与 Composite 模式实现命令行 SVG 编辑器。
 
+公开仓库：[Ail-code/svg-cli-editor](https://github.com/Ail-code/svg-cli-editor)。
+
 ## 运行
 
 需要 Node.js 22.18+（或更新的 LTS 版本）与 npm。
@@ -54,7 +56,7 @@ npm ci
 npm run check
 ```
 
-GitHub Actions 的 CI 在每次 push / pull request 时执行相同检查。
+提交前在本地运行以上检查。
 
 六种内置图形、编辑、容器操作、撤销重做、SVG 读写均已实现。
 `box` 属后续插件化阶段，本版按作业要求报未知图形类型。
