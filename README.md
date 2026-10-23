@@ -1,5 +1,7 @@
 # SVG 编辑器（CLI）
 
+> 当前为初稿。已具备可运行的实现与本地测试基础，后续按实际试用、需求复核和架构讨论逐步迭代，尚未进行最终提交验收，也未打 `final` 标签。
+
 Lab1 Phase 1：使用 TypeScript、Command 与 Composite 模式实现命令行 SVG 编辑器。
 
 公开仓库：[Ail-code/svg-cli-editor](https://github.com/Ail-code/svg-cli-editor)。
