@@ -92,7 +92,11 @@ export class SvgDocument implements ShapeContainer {
     const location = this.locate(id);
     if (location.parent === this) throw new SvgError(`cannot ungroup top-level container: ${id}`);
     for (const [key, value] of shape.attributes) {
-      for (const child of shape.children) if (!child.attributes.has(key)) child.set(key, value);
+      for (const child of shape.children) {
+        const current = child.attributes.get(key)?.trim().toLowerCase();
+        // Explicit inheritance depends on the removed group, just like an omitted value.
+        if (current === undefined || current === "inherit" || current === "unset") child.set(key, value);
+      }
     }
     location.parent.remove(shape);
     for (const [offset, child] of shape.children.entries()) {

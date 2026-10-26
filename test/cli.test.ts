@@ -73,6 +73,40 @@ test("nested group, ungroup, addto and sibling z-order restore on undo", async (
   await h.run("undo"); assert.equal(h.editor.document.container("scene").children[1]!.id, "node");
 });
 
+test("ungroup preserves inherited paint, explicit overrides, sibling order and history", async () => {
+  for (const keyword of ["inherit", "unset", "INHERIT", " UnSeT "]) {
+    const h = new TestHarness();
+    for (const line of [
+      "init", "create g scene", "set scene fill blue", "set scene stroke yellow",
+      "create rect before 0 0 1 1 in scene", "create g node in scene",
+      "set node fill red", "set node stroke black", "set node stroke-width 3",
+      `create rect inherited 0 0 10 10 "${keyword}" in node`, `set inherited stroke "${keyword}"`,
+      "create rect explicit 0 0 10 10 green in node", "set explicit stroke none", "set explicit stroke-width 5",
+      "create g nested in node", `set nested fill "${keyword}"`, `set nested stroke "${keyword}"`,
+      "create rect leaf 0 0 10 10 in nested", "create rect reset 0 0 10 10 initial in node",
+      "create rect after 0 0 1 1 in scene",
+    ]) await h.run(line);
+    const before = h.snapshot(); await h.run("ungroup node");
+    assert.deepEqual(h.editor.document.container("scene").children.map(shape => shape.id), ["before", "inherited", "explicit", "nested", "reset", "after"]);
+    for (const id of ["inherited", "nested"]) {
+      const shape = h.editor.document.require(id);
+      assert.equal(shape.attributes.get("fill"), "red", keyword);
+      assert.equal(shape.attributes.get("stroke"), "black", keyword);
+      assert.equal(shape.attributes.get("stroke-width"), "3");
+    }
+    const explicit = h.editor.document.require("explicit");
+    assert.equal(explicit.attributes.get("fill"), "green");
+    assert.equal(explicit.attributes.get("stroke"), "none");
+    assert.equal(explicit.attributes.get("stroke-width"), "5");
+    assert.equal(h.editor.document.require("reset").attributes.get("fill"), "initial");
+    assert.equal(h.editor.document.require("leaf").attributes.has("fill"), false);
+    const after = h.snapshot();
+    assert.equal(h.codec.encode(h.codec.decode(after).document), after);
+    await h.run("undo"); assert.equal(h.snapshot(), before);
+    await h.run("redo"); assert.equal(h.snapshot(), after);
+  }
+});
+
 test("queries do not consume undo; a new edit after undo clears redo", async () => {
   const h = new TestHarness(); await h.run("init"); await h.run("create rect r 10 20 30 40"); await h.run("move r 5 6");
   for (const line of ["tree", "tree r", "show r", "canvas", "help", "# ignored", ""]) await h.run(line);
