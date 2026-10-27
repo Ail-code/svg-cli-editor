@@ -41,7 +41,10 @@ export class SvgXmlCodec implements SvgCodec {
       for (const element of this.elements(root)) {
         const shape = this.readShape(element, reserved, counters, warnings);
         for (const attribute of ["fill", "stroke", "stroke-width"]) {
-          if (root.hasAttribute(attribute) && !shape.attributes.has(attribute)) shape.set(attribute, root.getAttribute(attribute)!);
+          if (!root.hasAttribute(attribute)) continue;
+          const current = shape.attributes.get(attribute)?.trim().toLowerCase();
+          // The document model does not retain root paint; materialize inherited values before saving.
+          if (current === undefined || current === "inherit" || current === "unset") shape.set(attribute, root.getAttribute(attribute)!);
         }
         document.add(shape);
       }

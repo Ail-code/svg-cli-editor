@@ -50,6 +50,34 @@ test("root style, px dimensions, namespace prefixes, and data-kind fallback", ()
   assert.equal(result.document.require("r").attributes.has("fill"), false);
 });
 
+test("root paint survives explicit inheritance and repeated SVG round trips", () => {
+  const codec = new SvgXmlCodec();
+  for (const keyword of ["inherit", "unset", "INHERIT", " UnSeT "]) {
+    const result = codec.decode(`<svg fill="red" stroke="black" stroke-width="3">
+      <rect id="r" width="10" height="20" fill="${keyword}" stroke="${keyword}"/>
+      <g id="g" fill="${keyword}" stroke="${keyword}"><rect id="leaf" width="10" height="20"/></g>
+      <rect id="override" width="10" height="20" fill="green" stroke="none" stroke-width="7"/>
+      <rect id="reset" width="10" height="20" fill="initial" stroke="initial"/>
+    </svg>`);
+    for (const id of ["r", "g"]) {
+      const shape = result.document.require(id);
+      assert.equal(shape.attributes.get("fill"), "red", keyword);
+      assert.equal(shape.attributes.get("stroke"), "black", keyword);
+      assert.equal(shape.attributes.get("stroke-width"), "3");
+    }
+    assert.equal(result.document.require("leaf").attributes.has("fill"), false);
+    const override = result.document.require("override");
+    assert.equal(override.attributes.get("fill"), "green");
+    assert.equal(override.attributes.get("stroke"), "none");
+    assert.equal(override.attributes.get("stroke-width"), "7");
+    assert.equal(result.document.require("reset").attributes.get("fill"), "initial");
+    assert.equal(result.document.require("reset").attributes.get("stroke"), "initial");
+    const saved = codec.encode(result.document);
+    assert.equal(codec.encode(codec.decode(saved).document), saved);
+    assert.deepEqual(result.warnings, []);
+  }
+});
+
 test("filesystem writes replace atomically; missing paths use required errors", async () => {
   const directory = await mkdtemp(join(tmpdir(), "svg-cli-")); const files = new NodeFileStore();
   try {
