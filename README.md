@@ -1,10 +1,10 @@
 # SVG 编辑器（CLI）
 
-> 当前为初稿。已具备可运行的实现与本地测试基础，后续按实际试用、需求复核和架构讨论逐步迭代，尚未进行最终提交验收，也未打 `final` 标签。
+> Phase 1 最终交付版本（2026 年 10 月 30 日）。严格构建、30 项测试和作业示例回放均通过；最终提交以 `final` 标签定位。验收依据及已知边界见 `doc/README.md`。
 
 Lab1 Phase 1：使用 TypeScript、Command 与 Composite 模式实现命令行 SVG 编辑器。
 
-公开仓库：[Ail-code/svg-cli-editor](https://github.com/Ail-code/svg-cli-editor)。
+公开仓库：[Ail-code/svg-cli-editor](https://github.com/Ail-code/svg-cli-editor)。[查看 final 版本](https://github.com/Ail-code/svg-cli-editor/tree/final) · [提交历史](https://github.com/Ail-code/svg-cli-editor/commits/main/)。
 
 ## 运行
 
